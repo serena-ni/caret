@@ -5,11 +5,11 @@ type simple commands, check in occasionally, and let it change over time.
 
 ### commands
 
-`help` - list commands
-`status` - check caret’s state
-`feed`, `play`, `sleep`, `pet` - interact
-`rename <name>` - rename caret
-`clear` - clear the terminal
+- `help` - list commands
+- `status` - check caret’s state
+- `feed`, `play`, `sleep`, `pet` - interact
+- `rename <name>` - rename caret
+- `clear` - clear the terminal
 
 Some commands are not listed.
 
