@@ -12,15 +12,13 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="terminal" onclick="document.getElementById('command').focus()">
+  <div id="terminal">
     <div id="output"></div>
 
-    <form id="input-form">
-      <div id="input-line">
-        <span class="prompt">caret ❯</span>
-        <input id="command" type="text" autocomplete="off" />
-      </div>
-    </form>
+    <div id="input-line">
+      <span class="prompt">></span>
+      <input id="command" type="text" autofocus autocomplete="off" />
+    </div>
   </div>
 
   <script src="script.js"></script>
