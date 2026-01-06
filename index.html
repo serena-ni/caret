@@ -12,12 +12,12 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="terminal">
+  <div id="terminal" onclick="document.getElementById('command').focus()">
     <div id="output"></div>
 
     <div id="input-line">
-      <span class="prompt">></span>
-      <input id="command" type="text" autofocus autocomplete="off" />
+      <span class="prompt">caret ❯</span>
+      <input id="command" type="text" autocomplete="off" />
     </div>
   </div>
 

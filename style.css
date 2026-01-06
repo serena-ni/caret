@@ -2,62 +2,67 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
-  height: 100vh;
-  background: radial-gradient(circle at top, #1b1f2a, #0f1117);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #0e0f13;
   font-family: "JetBrains Mono", monospace;
   color: #e6e6e6;
 }
 
+/* terminal container */
 #terminal {
-  width: 90%;
-  max-width: 640px;
-  height: 420px;
-  background: rgba(15, 17, 23, 0.9);
-  border-radius: 14px;
-  padding: 16px;
+  width: 100%;
+  height: 100%;
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* scrollback area */
 #output {
   flex: 1;
   overflow-y: auto;
-  padding-right: 6px;
+  padding-bottom: 12px;
 }
 
+/* individual lines */
 .line {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+/* color roles */
+.system {
+  color: #8be9fd;
 }
 
 .pet {
   color: #ffd6a5;
 }
 
-.system {
-  color: #8be9fd;
-}
-
 .secret {
   color: #a78bfa;
 }
 
-.prompt {
-  color: #a78bfa;
-  margin-right: 6px;
-}
-
+/* input area */
 #input-line {
   display: flex;
   align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
 }
 
+/* prompt */
+.prompt {
+  color: #a78bfa;
+  margin-right: 8px;
+  user-select: none;
+}
+
+/* input field */
 #command {
   flex: 1;
   background: none;
@@ -66,4 +71,19 @@ body {
   color: #e6e6e6;
   font-family: inherit;
   font-size: 1rem;
+  caret-color: #ffd6a5;
+}
+
+/* subtle scrollbar */
+#output::-webkit-scrollbar {
+  width: 8px;
+}
+
+#output::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+#output::-webkit-scrollbar-track {
+  background: transparent;
 }
