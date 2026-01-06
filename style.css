@@ -29,6 +29,14 @@ body {
   flex: 1;
   overflow-y: auto;
   padding-right: 6px;
+
+  /* hide scrollbar */
+  -ms-overflow-style: none;  /* IE/edge */
+  scrollbar-width: none;     /* firefox */
+}
+
+#output::-webkit-scrollbar {
+  display: none;             /* chrome, safari, opera */
 }
 
 .line {
