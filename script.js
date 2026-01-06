@@ -8,7 +8,8 @@ let pet = {
   hunger: 20,
   energy: 80,
   happiness: 60,
-  lastSeen: Date.now()
+  lastSeen: Date.now(),
+  startTime: Date.now()
 };
 
 const faces = {
@@ -19,7 +20,6 @@ const faces = {
 };
 
 /* persistence */
-
 function save() {
   localStorage.setItem(SAVE_KEY, JSON.stringify(pet));
 }
@@ -30,6 +30,7 @@ function load() {
 
   pet = JSON.parse(data);
 
+  // simulate time passing while away
   const minutes = Math.floor((Date.now() - pet.lastSeen) / 60000);
   pet.hunger = Math.min(100, pet.hunger + minutes * 2);
   pet.energy = Math.max(0, pet.energy - minutes);
@@ -39,7 +40,6 @@ function load() {
 }
 
 /* helpers */
-
 function getFace() {
   if (pet.energy < 25) return faces.sleepy;
   if (pet.hunger > 75) return faces.grumpy;
@@ -62,7 +62,6 @@ function print(text, className = "") {
 }
 
 /* commands */
-
 function help() {
   print(
 `commands:
@@ -72,7 +71,11 @@ function help() {
 - sleep
 - pet
 - rename <name>
-- clear`,
+- clear
+- time
+- about
+- version
+- inspire`,
     "system"
   );
 }
@@ -88,7 +91,6 @@ happiness: ${pet.happiness}`,
 }
 
 /* idle decay */
-
 function tick() {
   pet.hunger = Math.min(100, pet.hunger + 2);
   pet.energy = Math.max(0, pet.energy - 1);
@@ -100,13 +102,10 @@ function tick() {
 
   save();
 }
-
 setInterval(tick, 60000);
 
 /* boot */
-
 const restored = load();
-
 print(`booting caret...
 type "help" to begin.`, "system");
 
@@ -115,23 +114,23 @@ if (restored) {
 } else {
   print(`${getFace()} i am waiting.`, "pet");
 }
-
 save();
 
+/* conversation phrases */
+const greetings = ["hi","hello","hey","hiya","heyo","yo","sup"];
+const farewells = ["bye","goodbye","see ya","goodnight"];
+const thanks = ["thanks","thank you","ty"];
+const smallTalk = ["how are you","what's up","whats up","how's it going","sup"];
+
+const greetingResponses = ["…hello.","hi.","you’re here.","i noticed.","hello again."];
+const farewellResponses = ["bye.","…see you.","goodnight.","…"];
+const thanksResponses = ["…","you're welcome.","okay.","hm."];
+const smallTalkResponses = ["…","fine.","quiet.","observing."];
+
+/* easter eggs */
+const hiddenCommands = ["sudo","whoami","uptime","reset","echo","matrix","star"];
+
 /* input */
-
-const greetings = [
-  "hi", "hello", "hey", "heyo", "hiya", "yo", "sup"
-];
-
-const greetingResponses = [
-  "…hello.",
-  "hi.",
-  "you’re here.",
-  "i noticed.",
-  "hello again."
-];
-
 input.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
 
@@ -143,93 +142,67 @@ input.addEventListener("keydown", (e) => {
   print(`> ${raw}`, "system");
   input.value = "";
 
-  /* natural language greetings */
-
-  if (
-    greetings.includes(command) ||
-    greetings.some(g => lower === g + "!" || lower === g + "." || lower === g + "…")
-  ) {
+  // conversational phrases first
+  if (greetings.includes(command)) {
     pet.happiness = Math.min(100, pet.happiness + 3);
-    const response =
-      greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
-    print(`${getFace()} ${response}`, "pet");
-    pet.lastSeen = Date.now();
-    save();
-    return;
-  }
-
-  /* commands */
-
-  switch (command) {
-    case "help":
-      help();
-      break;
-
-    case "status":
-      status();
-      break;
-
+    print(`${getFace()} ${greetingResponses[Math.floor(Math.random()*greetingResponses.length)]}`,"pet");
+  } else if (farewells.includes(command)) {
+    print(`${getFace()} ${farewellResponses[Math.floor(Math.random()*farewellResponses.length)]}`,"pet");
+  } else if (thanks.includes(command)) {
+    pet.happiness = Math.min(100, pet.happiness + 2);
+    print(`${getFace()} ${thanksResponses[Math.floor(Math.random()*thanksResponses.length)]}`,"pet");
+  } else if (smallTalk.some(p => lower.includes(p))) {
+    pet.happiness = Math.min(100, pet.happiness + 2);
+    print(`${getFace()} ${smallTalkResponses[Math.floor(Math.random()*smallTalkResponses.length)]}`,"pet");
+  } 
+  // commands
+  else switch (command) {
+    case "help": help(); break;
+    case "status": status(); break;
     case "feed":
       pet.hunger = Math.max(0, pet.hunger - 30);
       pet.happiness = Math.min(100, pet.happiness + 10);
-      print(`${getFace()} accepted.`, "pet");
-      break;
-
+      print(`${getFace()} accepted.`, "pet"); break;
     case "play":
-      if (pet.energy < 20) {
-        print(`${getFace()} not now.`, "pet");
-      } else {
-        pet.energy -= 20;
-        pet.happiness = Math.min(100, pet.happiness + 25);
-        print(`${getFace()} that was… nice.`, "pet");
-      }
-      break;
-
+      if(pet.energy<20){print(`${getFace()} not now.`,"pet");}
+      else{pet.energy-=20;pet.happiness=Math.min(100,pet.happiness+25);print(`${getFace()} that was… nice.`,"pet");} break;
     case "sleep":
-      pet.energy = Math.min(100, pet.energy + 40);
-      pet.hunger = Math.min(100, pet.hunger + 10);
-      print(`${getFace()} …`, "pet");
-      break;
-
+      pet.energy = Math.min(100,pet.energy+40);
+      pet.hunger = Math.min(100,pet.hunger+10);
+      print(`${getFace()} …`,"pet"); break;
     case "pet":
       pet.happiness = Math.min(100, pet.happiness + 5);
-      print(`${getFace()} i noticed.`, "pet");
-      break;
-
+      print(`${getFace()} i noticed.`, "pet"); break;
     case "rename":
-      if (args[1]) {
-        pet.name = args[1];
-        print(`${getFace()} acknowledged.`, "pet");
-      } else {
-        print("rename requires a name.", "system");
-      }
-      break;
-
-    case "clear":
-      output.innerHTML = "";
-      break;
+      if(args[1]){pet.name=args[1]; print(`${getFace()} acknowledged.`,"pet");}
+      else{print("rename requires a name.","system");} break;
+    case "clear": output.innerHTML=""; break;
+    case "time": print(`local time: ${new Date().toLocaleTimeString()}`,"system"); break;
+    case "about": print("caret is a quiet terminal companion that reacts subtly to you.","system"); break;
+    case "version": print("caret v1.0","system"); break;
+    case "inspire":
+      const quotes=["…","keep typing.","the cursor waits.","silence is a friend."];
+      print(quotes[Math.floor(Math.random()*quotes.length)],"system"); break;
 
     /* secret commands */
-
-    case "sudo":
-      print("permission denied.", "secret");
-      break;
-
+    case "sudo": print("permission denied.","secret"); break;
+    case "whoami": print("a cursor between thoughts.","secret"); break;
     case "uptime":
-      print("caret has been running quietly.", "secret");
-      break;
-
-    case "whoami":
-      print("a cursor between thoughts.", "secret");
-      break;
-
+      const minutes=Math.floor((Date.now()-pet.startTime)/60000);
+      print(`caret has been alive for ${minutes} min.`,"secret"); break;
     case "reset":
       localStorage.removeItem(SAVE_KEY);
-      location.reload();
+      location.reload(); break;
+    case "echo":
+      if(args[1]) print(args.slice(1).join(" "),"secret");
+      else print("echo what?","secret"); break;
+    case "matrix":
+      print("scrolling...","secret");
       break;
+    case "star":
+      print("* ✦ ✧ ★ ✩ ✫ ✬ ✭ *","secret"); break;
 
-    default:
-      print("unknown command.", "system");
+    default: print("unknown command.","system");
   }
 
   pet.lastSeen = Date.now();
