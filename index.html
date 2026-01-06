@@ -15,10 +15,12 @@
   <div id="terminal" onclick="document.getElementById('command').focus()">
     <div id="output"></div>
 
-    <div id="input-line">
-      <span class="prompt">caret ❯</span>
-      <input id="command" type="text" autocomplete="off" />
-    </div>
+    <form id="input-form">
+      <div id="input-line">
+        <span class="prompt">caret ❯</span>
+        <input id="command" type="text" autocomplete="off" />
+      </div>
+    </form>
   </div>
 
   <script src="script.js"></script>
