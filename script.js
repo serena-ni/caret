@@ -3,8 +3,11 @@ const input = document.getElementById("command");
 
 const SAVE_KEY = "caret-save";
 
+// state
+
 let pet = {
   name: "caret",
+
   hunger: 20,
   energy: 80,
   happiness: 60,
@@ -12,7 +15,6 @@ let pet = {
   level: 1,
   xp: 0,
 
-  mood: 50,
   inventory: [],
 
   inGuessGame: false,
@@ -29,12 +31,11 @@ const faces = {
   neutral: "( o ω o )"
 };
 
-/* ---------- persistence ---------- */
+// persistence
 
 function applyDefaults() {
   pet.level ??= 1;
   pet.xp ??= 0;
-  pet.mood ??= 50;
   pet.inventory ??= [];
   pet.inGuessGame ??= false;
   pet.guessNumber ??= null;
@@ -60,7 +61,7 @@ function load() {
   return true;
 }
 
-/* ---------- helpers ---------- */
+// helpers
 
 function clampStats() {
   pet.hunger = Math.min(100, Math.max(0, pet.hunger));
@@ -70,11 +71,27 @@ function clampStats() {
 
 function gainXp(amount) {
   pet.xp += amount;
+
   while (pet.xp >= pet.level * 50) {
     pet.xp -= pet.level * 50;
     pet.level++;
     print(`level up. (${pet.level})`, "system");
+
+    // level-based item unlocks
+    if (pet.level === 2) giveItem("ball");
+    if (pet.level === 3) giveItem("key");
+    if (pet.level === 4) giveItem("disk");
   }
+}
+
+function giveItem(item) {
+  if (pet.inventory.includes(item)) return;
+  pet.inventory.push(item);
+  print(`obtained: ${item}`, "secret");
+}
+
+function hasItem(item) {
+  return pet.inventory.includes(item);
 }
 
 function getFace() {
@@ -98,25 +115,31 @@ function print(text, className = "") {
   }, 15);
 }
 
-/* ---------- commands ---------- */
+// commands
 
 function help() {
-  print(
-`commands:
-- status
-- feed
-- play
-- sleep
-- pet
-- guess
-- rename <name>
-- clear
-- time
-- about
-- version
-- inspire`,
-    "system"
-  );
+  let base = [
+    "status",
+    "feed",
+    "play",
+    "sleep",
+    "pet",
+    "guess",
+    "rename <name>",
+    "clear",
+    "time",
+    "about",
+    "version",
+    "inspire"
+  ];
+
+  if (pet.inventory.length > 0) base.push("inventory");
+  if (hasItem("ball")) base.push("throw");
+  if (hasItem("coin")) base.push("flip");
+  if (hasItem("key")) base.push("unlock");
+  if (hasItem("disk")) base.push("load");
+
+  print("commands:\n- " + base.join("\n- "), "system");
 }
 
 function status() {
@@ -131,7 +154,7 @@ happiness: ${pet.happiness}`,
   );
 }
 
-/* ---------- idle decay ---------- */
+// idle
 
 function tick() {
   pet.hunger += 2;
@@ -148,36 +171,23 @@ function tick() {
 }
 setInterval(tick, 60000);
 
-/* ---------- boot ---------- */
+// boot
 
 const restored = load();
 print(`booting caret...
 type "help" to begin.`, "system");
 
-if (restored) {
-  print(`${getFace()} you came back.`, "pet");
-} else {
-  print(`${getFace()} i am waiting.`, "pet");
-}
+if (restored) print(`${getFace()} you came back.`, "pet");
+else print(`${getFace()} i am waiting.`, "pet");
+
 save();
 
-/* ---------- conversation ---------- */
+// conversation
 
-const greetings = ["hi","hello","hey","hiya","heyo","yo","sup"];
-const farewells = ["bye","goodbye","see ya","goodnight"];
-const thanks = ["thanks","thank you","ty"];
-const smallTalk = ["how are you","what's up","whats up","how's it going","sup"];
-
+const greetings = ["hi", "hii", "hiii", "hello","hey","hiya","heyo","yo","sup"];
 const greetingResponses = ["…hello.","hi.","you’re here.","i noticed.","hello again."];
-const farewellResponses = ["bye.","…see you.","goodnight.","…"];
-const thanksResponses = ["…","you're welcome.","okay.","hm."];
-const smallTalkResponses = ["…","fine.","quiet.","observing."];
 
-/* ---------- secret commands ---------- */
-
-const hiddenCommands = ["sudo","whoami","uptime","reset","echo","matrix","star"];
-
-/* ---------- guess game ---------- */
+// guess game
 
 function startGuess() {
   pet.inGuessGame = true;
@@ -185,7 +195,7 @@ function startGuess() {
   print("pick a number between 1 and 10.", "system");
 }
 
-/* ---------- input ---------- */
+// input
 
 input.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
@@ -196,7 +206,7 @@ input.addEventListener("keydown", (e) => {
 
   print(`> ${raw}`, "system");
 
-  /* minigame intercept */
+  /* guess game intercept */
   if (pet.inGuessGame) {
     const num = Number(lower);
 
@@ -209,6 +219,8 @@ input.addEventListener("keydown", (e) => {
       print("correct.", "pet");
       pet.happiness += 10;
       gainXp(20);
+
+      if (Math.random() < 0.4) giveItem("coin");
     } else {
       print("wrong.", "pet");
       pet.happiness -= 5;
@@ -224,18 +236,10 @@ input.addEventListener("keydown", (e) => {
   const args = lower.split(" ");
   const command = args[0];
 
-  /* conversational first */
+  /* conversation */
   if (greetings.includes(command)) {
     pet.happiness += 3;
     print(`${getFace()} ${greetingResponses[Math.floor(Math.random()*greetingResponses.length)]}`, "pet");
-  } else if (farewells.includes(command)) {
-    print(`${getFace()} ${farewellResponses[Math.floor(Math.random()*farewellResponses.length)]}`, "pet");
-  } else if (thanks.includes(command)) {
-    pet.happiness += 2;
-    print(`${getFace()} ${thanksResponses[Math.floor(Math.random()*thanksResponses.length)]}`, "pet");
-  } else if (smallTalk.some(p => lower.includes(p))) {
-    pet.happiness += 2;
-    print(`${getFace()} ${smallTalkResponses[Math.floor(Math.random()*smallTalkResponses.length)]}`, "pet");
   }
 
   /* commands */
@@ -258,6 +262,8 @@ input.addEventListener("keydown", (e) => {
         pet.happiness += 25;
         gainXp(10);
         print(`${getFace()} that was… nice.`, "pet");
+
+        if (Math.random() < 0.3) giveItem("ball");
       }
       break;
 
@@ -276,13 +282,42 @@ input.addEventListener("keydown", (e) => {
       startGuess();
       break;
 
+    case "inventory":
+      if (pet.inventory.length === 0) {
+        print("inventory empty.", "system");
+      } else {
+        print("inventory:\n- " + pet.inventory.join("\n- "), "system");
+      }
+      break;
+
+    /* unlocked commands */
+    case "throw":
+      if (!hasItem("ball")) break;
+      pet.happiness += 5;
+      gainXp(5);
+      print(`${getFace()} it rolls away.`, "pet");
+      break;
+
+    case "flip":
+      if (!hasItem("coin")) break;
+      print(Math.random() < 0.5 ? "heads." : "tails.", "system");
+      break;
+
+    case "unlock":
+      if (!hasItem("key")) break;
+      print("something opens. quietly.", "secret");
+      break;
+
+    case "load":
+      if (!hasItem("disk")) break;
+      print("reading disk...", "secret");
+      break;
+
     case "rename":
       if (args[1]) {
         pet.name = args[1];
         print(`${getFace()} acknowledged.`, "pet");
-      } else {
-        print("rename requires a name.", "system");
-      }
+      } else print("rename requires a name.", "system");
       break;
 
     case "clear":
@@ -294,48 +329,16 @@ input.addEventListener("keydown", (e) => {
       break;
 
     case "about":
-      print("caret is a quiet terminal companion that reacts subtly to you.", "system");
+      print("caret is a quiet terminal companion that changes as you stay.", "system");
       break;
 
     case "version":
-      print("caret v1.1", "system");
+      print("caret v1.2", "system");
       break;
 
     case "inspire":
       const quotes = ["…","keep typing.","the cursor waits.","silence is a friend."];
       print(quotes[Math.floor(Math.random()*quotes.length)], "system");
-      break;
-
-    /* secrets */
-    case "sudo":
-      print("permission denied.", "secret");
-      break;
-
-    case "whoami":
-      print("a cursor between thoughts.", "secret");
-      break;
-
-    case "uptime":
-      const minutes = Math.floor((Date.now() - pet.startTime) / 60000);
-      print(`caret has been alive for ${minutes} min.`, "secret");
-      break;
-
-    case "reset":
-      localStorage.removeItem(SAVE_KEY);
-      location.reload();
-      break;
-
-    case "echo":
-      if (args[1]) print(args.slice(1).join(" "), "secret");
-      else print("echo what?", "secret");
-      break;
-
-    case "matrix":
-      print("scrolling...", "secret");
-      break;
-
-    case "star":
-      print("* ✦ ✧ ★ ✩ ✫ ✬ ✭ *", "secret");
       break;
 
     default:
