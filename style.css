@@ -30,13 +30,12 @@ body {
   overflow-y: auto;
   padding-right: 6px;
 
-  /* hide scrollbar */
-  -ms-overflow-style: none;  /* IE/edge */
-  scrollbar-width: none;     /* firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 #output::-webkit-scrollbar {
-  display: none;             /* chrome, safari, opera */
+  display: none;
 }
 
 .line {
@@ -44,6 +43,7 @@ body {
   white-space: pre-wrap;
 }
 
+/* text roles */
 .pet {
   color: #ffd6a5;
 }
@@ -61,6 +61,7 @@ body {
   margin-right: 6px;
 }
 
+/* input */
 #input-line {
   display: flex;
   align-items: center;
@@ -74,4 +75,21 @@ body {
   color: #e6e6e6;
   font-family: inherit;
   font-size: 1rem;
+}
+
+/* item rarity (subtle) */
+.item.common {
+  color: #cbd5e1;
+}
+
+.item.uncommon {
+  color: #86efac;
+}
+
+.item.rare {
+  color: #facc15;
+}
+
+.item.special {
+  color: #c4b5fd;
 }
